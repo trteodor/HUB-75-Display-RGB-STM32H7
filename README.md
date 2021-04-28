@@ -1,6 +1,6 @@
 # RGB HUB-75 Display
 In this project, I was controlling an RGB display with a standard HUB75 connector. 
-Link to the video where he presents this project. Unfortunately, I am very dissatisfied with the quality of this video.
+Below is link to the video where I presents this project. Unfortunately, I am very dissatisfied with the quality of this video.
 
 * https: //youtu.be/iAM5exIkRWA
 
