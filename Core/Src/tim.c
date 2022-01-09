@@ -170,7 +170,7 @@ void MX_TIM5_Init(void)
   /* USER CODE END TIM5_Init 1 */
   TIM_InitStruct.Prescaler = 239;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 100;
+  TIM_InitStruct.Autoreload = 150;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(TIM5, &TIM_InitStruct);
   LL_TIM_DisableARRPreload(TIM5);

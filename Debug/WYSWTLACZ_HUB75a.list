@@ -1803,7 +1803,7 @@ for(int i=0; i<4; i++)
  __HAL_TIM_SET_COMPARE(&htim4,TIM_CHANNEL_1,100-scr_brightness);
  8000ec8:	4b04      	ldr	r3, [pc, #16]	; (8000edc <HAL_QSPI_TxCpltCallback+0x58>)
  8000eca:	681b      	ldr	r3, [r3, #0]
- 8000ecc:	2255      	movs	r2, #85	; 0x55
+ 8000ecc:	220a      	movs	r2, #10
  8000ece:	635a      	str	r2, [r3, #52]	; 0x34
 }
  8000ed0:	bf00      	nop

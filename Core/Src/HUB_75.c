@@ -14,7 +14,7 @@
 #include "stdbool.h"
 
 //@here define the brightness
-#define scr_brightness 15
+#define scr_brightness 90
 //min 1 max 100;
 
 static void PrepareAndGetWithBritnessRowPart255Color(uint8_t *BMP, uint8_t *OUT_B, uint8_t BitColorBrightnessMask);
