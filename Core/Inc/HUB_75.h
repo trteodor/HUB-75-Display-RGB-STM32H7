@@ -74,6 +74,8 @@ extern uint32_t  QSPI_zT_CLT;
 extern uint8_t BMP_OB[];
 extern int pointer;
 
+
+extern void View256ColorBitMap(uint8_t *BMP);
 extern void TIM5_CallBack();
 extern void PrepareFullBuffer(uint8_t *BMP,uint8_t *OUT_B);
 extern void HUB_75_INIT();

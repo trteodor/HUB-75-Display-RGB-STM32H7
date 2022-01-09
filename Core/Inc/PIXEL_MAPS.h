@@ -12,6 +12,8 @@ extern void lll();
 extern uint8_t Quad_Pika[];
 
 extern uint8_t Palette256color[];
+extern uint8_t QuadPika256c[];
+extern uint8_t Papugi[];
 
 extern uint8_t Pozdr_wsz[];
 extern uint8_t RAWS_MAP[];
