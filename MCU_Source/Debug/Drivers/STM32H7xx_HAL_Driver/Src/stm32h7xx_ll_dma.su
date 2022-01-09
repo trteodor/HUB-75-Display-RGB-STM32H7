@@ -1,0 +1,14 @@
+stm32h7xx_ll_dma.h:498:22:LL_DMA_DisableStream	24	static
+stm32h7xx_ll_dma.h:557:22:LL_DMA_ConfigTransfer	32	static
+stm32h7xx_ll_dma.h:1034:22:LL_DMA_SetDataLength	32	static
+stm32h7xx_ll_dma.h:1221:22:LL_DMA_SetPeriphRequest	24	static
+stm32h7xx_ll_dma.h:1407:22:LL_DMA_SetMemoryBurstxfer	32	static
+stm32h7xx_ll_dma.h:1460:22:LL_DMA_SetPeriphBurstxfer	32	static
+stm32h7xx_ll_dma.h:1735:22:LL_DMA_ConfigFifo	32	static
+stm32h7xx_ll_dma.h:1801:22:LL_DMA_SetMemoryAddress	32	static
+stm32h7xx_ll_dma.h:1826:22:LL_DMA_SetPeriphAddress	32	static
+stm32h7xx_ll_bus.h:977:22:LL_AHB1_GRP1_ForceReset	16	static
+stm32h7xx_ll_bus.h:1005:22:LL_AHB1_GRP1_ReleaseReset	16	static
+stm32h7xx_ll_dma.c:155:10:LL_DMA_DeInit	24	static
+stm32h7xx_ll_dma.c:284:10:LL_DMA_Init	24	static
+stm32h7xx_ll_dma.c:385:6:LL_DMA_StructInit	16	static

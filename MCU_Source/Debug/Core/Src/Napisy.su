@@ -1,0 +1,7 @@
+Napisy.c:292:5:Create_String_buffer	40	static
+Napisy.c:331:10:Insert_Font_in_BUF	32	static
+Napisy.c:387:9:get_bit	16	static
+Napisy.c:391:9:get_font	48	static
+Napisy.c:439:9:siding_font	576	static
+Napisy.c:461:6:change_font_color	24	static
+Napisy.c:472:6:Odczytaj_znak_S16_uc8	16	static

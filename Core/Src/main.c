@@ -110,184 +110,19 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM4_Init();
   MX_SPI2_Init();
-  MX_IWDG1_Init();
   /* USER CODE BEGIN 2 */
 
-  //HAL_Delay(2);  //WatchDOG!!!!! na 20 MS
-  HAL_IWDG_Refresh(&hiwdg1);
 HUB_75_INIT();
-
-INIT_UART3();
-
-uint8_t Proces_num=0 ;
-
-uint8_t Pozdr_widzow[10000]={0};
-
-uint8_t B1[]= "tel. 885015433";
-int Size=sizeof(B1)-1;
-Create_String_buffer (B1, Size, 0 , Pozdr_widzow,Azure);
-uint8_t B2[]= "POZDRAWIAMY";
-Size=sizeof(B2)-1;
-Create_String_buffer (B2, Size, 1 , Pozdr_widzow,Green);
-
-HAL_IWDG_Refresh(&hiwdg1);
-
-uint8_t ZaprDoSalonuFryzStudio[10000]={0};
-uint8_t S1[]= " ZAPRASZAMY";
-uint8_t S2[]= "  DO SALONU ";
-uint8_t S3[]= "FRYZJESKIEGO";
-uint8_t S4[]= " ORAZ STUDIA";
-uint8_t S5[]= "  PAZNOKCI!";
- Size=sizeof(S1)-1;
-Create_String_buffer (S1, Size, 0 , ZaprDoSalonuFryzStudio,Azure);
- Size=sizeof(S2)-1;
-Create_String_buffer (S2, Size, 1 , ZaprDoSalonuFryzStudio,Green);
- Size=sizeof(S3)-1;
-
- HAL_IWDG_Refresh(&hiwdg1);
-
-Create_String_buffer (S3, Size, 2 , ZaprDoSalonuFryzStudio,Yellow);
- Size=sizeof(S4)-1;
-Create_String_buffer (S4, Size, 3 , ZaprDoSalonuFryzStudio,Purple);
-Size=sizeof(S5)-1;
-Create_String_buffer (S5, Size, 4 , ZaprDoSalonuFryzStudio,White);
-int ZaprDoSalonuFryzStudioRow=4+1;
-
-
-/*
-uint8_t ZaprDoSalonuFryzStudio2[10000]={0};
-uint8_t S12[]= "ZAPRASZAMY";
-uint8_t S22[]= "DO SALONU ";
-uint8_t S32[]= "FRYZJESKIEGO";
-uint8_t S42[]= " ORAZ STUDIA";
-uint8_t S52[]= "  PAZNKOCI";
- Size=sizeof(S1)-1;
-Create_String_buffer (S1, Size, 0 , ZaprDoSalonuFryzStudio2,Azure);
- Size=sizeof(S2)-1;
-Create_String_buffer (S2, Size, 1 , ZaprDoSalonuFryzStudio2,Green);
- Size=sizeof(S3)-1;
-Create_String_buffer (S3, Size, 2 , ZaprDoSalonuFryzStudio2,Yellow);
- Size=sizeof(S4)-1;
-Create_String_buffer (S4, Size, 3 , ZaprDoSalonuFryzStudio2,Purple);
-Size=sizeof(S5)-1;
-Create_String_buffer (S5, Size, 4 , ZaprDoSalonuFryzStudio,Purple);
-int ZaprDoSalonuFryzStudioRow2=4+1;
-*/
 
 
 SedingBufor_Adr=OUT_B1;
+View256ColorBitMap(Palette256color);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_IWDG_Refresh(&hiwdg1);
-	  HandleEcho(&Thuart3);
-
-	  switch( Proces_num )
-	  {
-	  case 0:
-	  	Verical_Scroll_Flow_withHOLD(ZaprDoSalonuFryzStudio, ZaprDoSalonuFryzStudioRow*16, 50, 800,300, 0);  //this fucion execution maks 550us
-	   if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-	   {
-	  	 Proces_num++;
-	   }
-	  break;
-	  case 1:
-
-	  	Verical_Scroll_Flow_withHOLD(ZaprDoSalonuFryzStudio, (ZaprDoSalonuFryzStudioRow*16) +16 , 50, 300,800, 1);
-	  	 if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-	  	 {
-	  		 Proces_num++;
-	  	 }
-	  	break;
-	  case 2:
-
-	  	Viewing_BitMapBy_Time(Pozdr_widzow, 2000);
-	  	 if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-	  	 {
-	  		 Proces_num++;
-	  	 }
-
-	  	break;
-	  case 3:
-
-	  	Viewing_BitMapBy_Time(Pozdr_widzow, 1000);
-	  	 if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-	  	 {
-	  		 Proces_num++;
-	  	 }
-
-	  	break;
-
-	  case 4:
-		  	 Horizontal_SCROLL( Pozdr_wsz, 1300 , 1300, 23);  //Pozdr_wsz
-		  	 if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-		  	 {
-		  		 Proces_num++;
-		  	 }
-
-
-	  	break;
-	  case 5:
-		  	  	  	  //Napisy z UARTU czyli bluetootha
-		  if(Ilosc_Lini_tesktu>0)
-		  {
-
-			  if(Ilosc_Lini_tesktu==1 || Ilosc_Lini_tesktu==2)
-			  {
-				  	Viewing_BitMapBy_Time( Created_By_UART_BMP , 6000);
-
-						  	 if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-						  	 {
-						  		Proces_num++;
-						  		break;
-						  	 }
-			  }
-
-
-			  else if(Ilosc_Lini_tesktu==3 || Ilosc_Lini_tesktu==4)
-			  {
-				  Verical_Scroll_Flow_withHOLD(Created_By_UART_BMP, 64, 80, 3200,3200, 1);
-				  	 if(SCR_PROCESS==SCR_VIEWING_PROCESS_DONE)
-				  	 {
-				  		Proces_num++;
-				  		break;
-				  	 }
-			  }
-			  else
-			  {
-				  SCR_PROCESS=SCR_VIEWING_PROCESS_DONE;
-				  Proces_num++;
-				  break;
-			  }
-
-			  if(  (HAL_GetTick() - Z_czasOtrzymania_tekstu) > (1000*60*1) )
-			  {
-				  SCR_PROCESS=SCR_VIEWING_PROCESS_DONE;
-				  Ilosc_Lini_tesktu=0;
-				  f_start_view=1;
-				  Proces_num++;
-				  break;
-			  }
-
-		  }
-
-		  else
-		  {
-			  SCR_PROCESS=SCR_VIEWING_PROCESS_DONE;
-			  Proces_num++;
-			  break;
-		  }
-	  	break;
-
-	  default :
-	  	Proces_num=0;
-
-	  	break;
-	  }
-
 
     /* USER CODE END WHILE */
 

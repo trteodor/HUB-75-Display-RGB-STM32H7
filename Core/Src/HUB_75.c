@@ -11,16 +11,57 @@
 #include "tim.h"
 #include "quadspi.h"
 #include "PIXEL_MAPS.h"
+#include "stdbool.h"
 
 //@here define the brightness
-#define scr_brightness 25
+#define scr_brightness 15
 //min 1 max 100;
+
+static void PrepareAndGetWithBritnessRowPart255Color(uint8_t *BMP, uint8_t *OUT_B, uint8_t BitColorBrightnessMask);
+static void Prepare256Color_Row(uint8_t *BMP, uint8_t *OUT_B, uint8_t ROW, uint8_t BitColorBrightnessMask);
+static void PrepareFull256Color_Buffer(uint8_t *BMP);
 
 void Send_BUF_IN_SCR(uint8_t *SendBuffer);
 void Select_Send_Buf(uint8_t *BITMAP);
 void PrepareRowPart(uint8_t *BMP,uint8_t *OUT_B);
 void wybierz_linie(uint8_t *MAP_NAME);
 uint8_t* HOR_SCROLL_PROCES(uint8_t *BIT_MAP, uint32_t Time_Pr, uint16_t Hor_Pixel_Count);
+
+
+typedef struct
+{
+	uint8_t OUT_Bit1[2550];
+	uint8_t OUT_Bit2[2550];
+	uint8_t OUT_Bit3[2550];
+}HUB75_Buffors_t;
+
+typedef struct
+{
+	HUB75_Buffors_t HUB75_Buffors[2];
+	bool Mode256ColorFlag;
+	uint8_t ActualPickedBuffor;
+	uint8_t ActualBCDModulationTicks;
+
+	int ActualPushedLine;
+}HUB75_DescStruct_t;
+
+HUB75_DescStruct_t HUB75_DescStruct;
+
+typedef struct
+{
+//	uint8_t Conv_BP[10000]={0};
+//	uint32_t zT_SCROLL=0;
+//	uint32_t zT_View=0;
+//	uint32_t f_start_view=1;
+	uint32_t start_view_by_time;
+}ScrollProcess_t;
+
+
+
+
+
+
+
 int pointer=0;
 //Bufory
 uint8_t Conv_BP[10000]={0};
@@ -45,7 +86,64 @@ uint8_t Bufor_Send_Picker=BUFOR1;
 void TIM5_CallBack()
 {
 	__HAL_TIM_SET_COMPARE(&htim4,TIM_CHANNEL_1,100);
-	Send_BUF_IN_SCR( SedingBufor_Adr );
+
+	if(HUB75_DescStruct.Mode256ColorFlag == true)
+	{
+					/* 8 ticks to send each line - it should work then is one tick*/
+					static uint32_t Count8Ticks;
+					Count8Ticks++;
+					if(Count8Ticks == 8)
+					{
+						Count8Ticks = 0 ;
+
+						if(HUB75_DescStruct.ActualBCDModulationTicks > 8 )
+						{
+							HUB75_DescStruct.ActualBCDModulationTicks = 0;
+							HUB75_DescStruct.ActualPickedBuffor = 0;
+						}
+
+						if(HUB75_DescStruct.ActualBCDModulationTicks == 2)
+						{
+							HUB75_DescStruct.ActualPickedBuffor = 1;
+						}
+						if(HUB75_DescStruct.ActualBCDModulationTicks == 4)
+						{
+							HUB75_DescStruct.ActualPickedBuffor = 2;
+						}
+
+
+						HUB75_DescStruct.ActualBCDModulationTicks++;
+					}
+
+
+
+
+		if( HUB75_DescStruct.ActualPickedBuffor == 0)
+		{
+			Send_BUF_IN_SCR( HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1 );
+		}
+		else if( HUB75_DescStruct.ActualPickedBuffor == 1)
+		{
+			Send_BUF_IN_SCR( HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2 );
+		}
+		else if ( HUB75_DescStruct.ActualPickedBuffor == 2)
+		{
+			Send_BUF_IN_SCR( HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3 );
+		}
+
+
+
+		/*UNUSED NOW*/
+		HUB75_DescStruct.ActualPushedLine++;
+		if(HUB75_DescStruct.ActualPushedLine > 8)
+		{
+			HUB75_DescStruct.ActualPushedLine= 0;
+		}
+	}
+	else
+	{
+		Send_BUF_IN_SCR( SedingBufor_Adr );
+	}
 }
 void Send_BUF_IN_SCR(uint8_t *SendBuffer)
 {
@@ -124,6 +222,13 @@ void Send_BUF_IN_SCR(uint8_t *SendBuffer)
 						break;
 					}
 }
+
+void View256ColorBitMap(uint8_t *BMP)
+{
+	HUB75_DescStruct.Mode256ColorFlag = true;
+	PrepareFull256Color_Buffer(BMP);
+}
+
 void PrepareFullBuffer(uint8_t *BMP,uint8_t *OUT_B)
 {
 for(int i=0; i<2500; i++)
@@ -139,6 +244,140 @@ PrepareRow(BMP,OUT_B+(5*300),2);
 PrepareRow(BMP,OUT_B+(6*300),1);
 PrepareRow(BMP,OUT_B+(7*300),0);
 }
+
+static void PrepareFull256Color_Buffer(uint8_t *BMP)
+{
+	for(int i=0; i<2500; i++)
+	{
+		HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1[i]=0x00;
+		HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2[i]=0x00;
+		HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3[i]=0x00;
+	}
+	/*BitColorBrightnessMask minimum*/
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(0*300),7,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(1*300),6,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(2*300),5,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(3*300),4,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(4*300),3,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(5*300),2,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(6*300),1,0x25);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit1+(7*300),0,0x25);
+//	/*BitColorBrightnessMask aver*/
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(0*300),7,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(1*300),6,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(2*300),5,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(3*300),4,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(4*300),3,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(5*300),2,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(6*300),1,0x4A);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit2+(7*300),0,0x4A);
+	/*BitColorBrightnessMask high*/
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(0*300),7,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(1*300),6,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(2*300),5,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(3*300),4,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(4*300),3,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(5*300),2,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(6*300),1,0x92);
+	Prepare256Color_Row(BMP,HUB75_DescStruct.HUB75_Buffors[0].OUT_Bit3+(7*300),0,0x92);
+}
+
+/*
+ * @brieg
+ * PrepareRowPart255Color(uint8_t *BMP, uint8_t OUT_B, uint8_t BitColorBrightnessMask)
+ *
+ * arg: BitColorBrightnessMask - allowed values:
+ * 0b00100101 ( 3 colors set minimum brightness) - 0x25
+ * 0b01001010 average brihtnes (all colors) - 0x4A
+ * 0b10010010 maximum brihtnes (all colors) - 0x92
+ * */
+static void PrepareAndGetWithBritnessRowPart255Color(uint8_t *BMP, uint8_t *OUT_B, uint8_t BitColorBrightnessMask)
+{
+
+//#ifdef DEBUG
+//	if(BitColorBrightnessMask != 0b00100101
+//			& BitColorBrightnessMask != 0b01000010
+//			& BitColorBrightnessMask != 0b10010010)
+//	{
+//		while(1)
+//		{
+//
+//		}
+//	}
+//#endif
+
+	int HIGHER_BIT=0,LOWER_BIT=0;
+
+	uint8_t NR_PIXLA=0;
+	int adr_ink=16;
+
+	for(int i=0; i<4; i++)
+	{
+		for(int NR_BIT=0; NR_BIT<8; NR_BIT++) //ten Numer bit sie plusuje i w tym forze
+			//wiec 2x petla sie powtarza 4x wpisuje lacznie 64 pixle w tej funkcji od  +16 do -48 wzgledem przek adresu
+		{
+			if(BitColorBrightnessMask != 0)
+			{
+				LOWER_BIT=0;
+				HIGHER_BIT=0;
+				HIGHER_BIT=(BMP[NR_PIXLA + 1]);
+				LOWER_BIT= (BMP[NR_PIXLA]);
+//								HIGHER_BIT=0xA0;
+//								LOWER_BIT= 0x03;
+				NR_PIXLA++;
+				NR_PIXLA++;
+				adr_ink--;
+				//Higer
+			}
+
+			uint8_t redColorSetMask = HIGHER_BIT & ( 0xE0 & BitColorBrightnessMask );
+			uint8_t GreenColorSetMask = HIGHER_BIT & ( 0x1C & BitColorBrightnessMask );
+			uint8_t BlueColorSetMask = HIGHER_BIT & ( (0x3)  & BitColorBrightnessMask ); /*shift one left or not here?!?!*/
+
+			if(HIGHER_BIT==0) goto Lower;
+
+			if( redColorSetMask )
+			{
+				OUT_B[adr_ink ] |=1 << (0); /*OUT_B[adr_ink ] */
+			}
+			if( GreenColorSetMask )
+			{
+				OUT_B[adr_ink ] |=1 << (1); /*OUT_B[adr_ink ] */
+			}
+			if( BlueColorSetMask )
+			{
+				OUT_B[adr_ink ] |=1 << (2); /*OUT_B[adr_ink ] */
+			}
+
+			Lower:
+
+			NR_BIT++;
+
+			redColorSetMask = LOWER_BIT & ( 0xE0 & BitColorBrightnessMask );
+			GreenColorSetMask = LOWER_BIT & ( 0x1C & BitColorBrightnessMask );
+			BlueColorSetMask = LOWER_BIT & ( (0x3)  & BitColorBrightnessMask ); /*shift one left or not here?!?!*/
+
+			if(LOWER_BIT==0) goto END_LOOP;
+
+			if( redColorSetMask )
+			{
+				OUT_B[adr_ink ] |=1 << (4);
+			}
+			if( GreenColorSetMask )
+			{
+				OUT_B[adr_ink ] |=1 << (5);
+			}
+			if( BlueColorSetMask )
+			{
+				OUT_B[adr_ink ] |=1 << (6);
+			}
+
+		END_LOOP:;
+
+		}
+	}
+}
+
 void PrepareRow(uint8_t *BMP, uint8_t *OUT_B, uint8_t ROW)
 {
 
@@ -169,6 +408,37 @@ void PrepareRow(uint8_t *BMP, uint8_t *OUT_B, uint8_t ROW)
 	PrepareRowPart ( BMP+ (24*64) +(ROW*64), ( OUT_B+(15*16)) );  //najstarszy
 																						//kurde gdyby algorytm na to znalezc :/
 }
+
+static void Prepare256Color_Row(uint8_t *BMP, uint8_t *OUT_B, uint8_t ROW, uint8_t BitColorBrightnessMask)
+{
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(32*2)+ (0*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(2*16)) , BitColorBrightnessMask );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(32*2)+ (8*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(3*16)) , BitColorBrightnessMask  );
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(32*2)+ (16*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(10*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(32*2)+ (24*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(11*16))  , BitColorBrightnessMask ); // srodek mlodszy
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(16*2)+ (0*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(4*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(16*2)+ (8*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(5*16)) , BitColorBrightnessMask  );
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(16*2)+ (16*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(12*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(16*2)+ (24*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(13*16)) , BitColorBrightnessMask  ); // srodek starszy
+
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(48*2)+ (0*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(0*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(48*2)+ (8*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(1*16)) , BitColorBrightnessMask  );
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(48*2)+ (16*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(8*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+(48*2)+ (24*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(9*16)) , BitColorBrightnessMask  ); // najmlodszy
+
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+ (0*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(6*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+ (8*(64 *2))  +(ROW*(64 *2)), ( OUT_B+(7*16)) , BitColorBrightnessMask  );
+
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+ (16*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(14*16)) , BitColorBrightnessMask  );
+	PrepareAndGetWithBritnessRowPart255Color ( BMP+ (24*(64 *2)) +(ROW*(64 *2)), ( OUT_B+(15*16)) , BitColorBrightnessMask  );  //najstarszy
+																						//kurde gdyby algorytm na to znalezc :/
+}
+
 void PrepareRowPart(uint8_t *BMP,uint8_t *OUT_B)
 {
 int HIGHER_BIT=0,LOWER_BIT=0;
@@ -315,6 +585,7 @@ for(int i=0; i<4; i++)
 }
 
 }
+
 void HAL_QSPI_TxCpltCallback(QSPI_HandleTypeDef *hqspi)
 {
 	for(int i=0; i<4; i++)
@@ -330,6 +601,7 @@ for(int i=0; i<4; i++)
 
  __HAL_TIM_SET_COMPARE(&htim4,TIM_CHANNEL_1,100-scr_brightness);
 }
+
 void HUB_75_INIT()
 {
 	LL_TIM_EnableIT_CC1(TIM5);

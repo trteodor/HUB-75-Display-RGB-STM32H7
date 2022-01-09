@@ -1,0 +1,3 @@
+String_From_UART.c:20:5:Conv_String_From_UART_BMP	48	static
+String_From_UART.c:95:9:get_color_value	16	static
+String_From_UART.c:127:5:Set_Flag_String_From_Usart	16	static
