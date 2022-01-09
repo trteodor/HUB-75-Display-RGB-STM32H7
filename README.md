@@ -14,6 +14,8 @@ However, I got in there to present a little bit of this design. I speak Polish o
 
 ![photo](https://github.com/trteodor/HUB-75-Display-RGB-STM32H7/blob/master/Pictures/266770409_446580937089154_2001470405314787855_n.jpg)
 
+256 Color Pallete:
+ * in the real world it looks a bit better (the inertia of the human eye is greater than that of the cameras)
 ![photo256cPal](https://github.com/trteodor/HUB-75-Display-RGB-STM32H7/blob/master/Pictures/256ColorPalleteInScreen.png)
 
 # Used Tools and references:
